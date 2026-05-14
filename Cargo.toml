@@ -1,0 +1,9 @@
+[package]
+name = "click_dat"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+egui = "0.34.2"
+enigo = "0.6.1"
+inputbot = "0.6.0"
