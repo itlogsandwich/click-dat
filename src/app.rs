@@ -4,7 +4,7 @@ use std::sync::{
 };
 use std::time::Duration;
 
-use eframe::{NativeOptions, egui};
+use eframe::{NativeOptions, Renderer, egui};
 
 const DEFAULT_INTERVAL_SECS: u64 = 1;
 const MIN_INTERVAL_SECS: u64 = 1;
@@ -96,6 +96,7 @@ impl eframe::App for AppState {
 pub fn options(width: f32, height: f32) -> NativeOptions {
     NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([width, height]),
+        renderer: Renderer::Glow,
         ..Default::default()
     }
 }
