@@ -40,7 +40,13 @@ fn main() {
             }
 
             let clicked_at = Instant::now();
-            let _ = enigo.button(Button::Left, Click).expect("Failed to click");
+            // A failed synthetic click (e.g. SendInput blocked by UIPI when the
+            // focused window is higher-integrity) must not kill the worker, or
+            // clicking would be silently dead for the rest of the session. Skip
+            // the click and keep pacing.
+            if let Err(error) = enigo.button(Button::Left, Click) {
+                eprintln!("click failed: {error}");
+            }
             sleep_for_current_interval(&click_state, clicked_at);
         }
     });
