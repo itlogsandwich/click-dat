@@ -9,6 +9,7 @@ use eframe::{NativeOptions, Renderer, egui};
 const DEFAULT_CLICKS_PER_SECOND: u64 = 1;
 const MIN_CLICKS_PER_SECOND: u64 = 1;
 const MAX_CLICKS_PER_SECOND: u64 = 50;
+const TOGGLE_BUTTON_WIDTH: f32 = 180.0;
 
 pub struct SharedState {
     clicks_per_second: AtomicU64,
@@ -180,7 +181,7 @@ impl eframe::App for AppState {
                     };
                     if ui
                         .add_sized(
-                            [ui.available_width(), 34.0],
+                            [TOGGLE_BUTTON_WIDTH, 34.0],
                             egui::Button::new(egui::RichText::new(toggle_text).strong())
                                 .fill(toggle_fill),
                         )
