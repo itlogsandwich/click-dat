@@ -13,6 +13,8 @@ mod app;
 
 const CLICK_TIMING_CUSHION: Duration = Duration::from_millis(1);
 const MAX_SLEEP_SLICE: Duration = Duration::from_millis(2);
+const SPIN_MARGIN: Duration = Duration::from_millis(3);
+const STARTUP_GRACE: Duration = Duration::from_millis(300);
 
 fn main() {
     env_logger::init();
@@ -24,14 +26,22 @@ fn main() {
     thread::spawn(move || {
         let mut enigo = Enigo::new(&Settings::default()).expect("failed to initialize");
 
+        let mut was_clicking = false;
         loop {
-            if click_state.is_clicking() {
-                let clicked_at = Instant::now();
-                let _ = enigo.button(Button::Left, Click).expect("Failed to click");
-                sleep_for_current_interval(&click_state, clicked_at);
-            } else {
+            if !click_state.is_clicking() {
+                was_clicking = false;
                 sleep(Duration::from_millis(50));
+                continue;
             }
+            if !was_clicking {
+                was_clicking = true;
+                wait_startup_grace(&click_state);
+                continue;
+            }
+
+            let clicked_at = Instant::now();
+            let _ = enigo.button(Button::Left, Click).expect("Failed to click");
+            sleep_for_current_interval(&click_state, clicked_at);
         }
     });
 
@@ -59,11 +69,18 @@ fn sleep_for_current_interval(state: &app::SharedState, clicked_at: Instant) {
             break;
         }
 
-        if remaining > CLICK_TIMING_CUSHION {
-            sleep((remaining - CLICK_TIMING_CUSHION).min(MAX_SLEEP_SLICE));
+        if remaining > SPIN_MARGIN {
+            sleep((remaining - SPIN_MARGIN).min(MAX_SLEEP_SLICE));
         } else {
             yield_now();
         }
+    }
+}
+
+fn wait_startup_grace(state: &app::SharedState) {
+    let started_at = Instant::now();
+    while state.is_clicking() && started_at.elapsed() < STARTUP_GRACE {
+        sleep(MAX_SLEEP_SLICE);
     }
 }
 

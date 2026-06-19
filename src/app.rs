@@ -69,6 +69,7 @@ impl SharedState {
 pub struct AppState {
     state: Arc<SharedState>,
     style_configured: bool,
+    was_clicking: bool,
 }
 
 impl AppState {
@@ -76,7 +77,18 @@ impl AppState {
         Self {
             state,
             style_configured: false,
+            was_clicking: false,
         }
+    }
+
+    fn minimize_on_start(&mut self, ctx: &egui::Context) {
+        let is_clicking = self.state.is_clicking();
+        // Rising edge (Start pressed via mouse or F6): get the window out from
+        // under the cursor so the first auto-click can't land on the button.
+        if is_clicking && !self.was_clicking {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+        }
+        self.was_clicking = is_clicking;
     }
 
     fn configure_style_once(&mut self, ctx: &egui::Context) {
@@ -200,6 +212,8 @@ impl eframe::App for AppState {
                         .color(egui::Color32::from_rgb(141, 149, 163)),
                 );
             });
+
+        self.minimize_on_start(ui.ctx());
     }
 }
 
