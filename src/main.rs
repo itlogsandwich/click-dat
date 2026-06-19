@@ -40,7 +40,7 @@ fn main() {
 
     if let Err(error) = eframe::run_native(
         "click dat",
-        app::options(300.0, 300.0),
+        app::options(360.0, 240.0),
         Box::new(|_| Ok(Box::new(app::AppState::new(shared_state)))),
     ) {
         println!("Oh nooooo, {error}");
