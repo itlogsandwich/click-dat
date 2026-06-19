@@ -9,7 +9,7 @@ use eframe::{NativeOptions, Renderer, egui};
 const DEFAULT_CLICKS_PER_SECOND: u64 = 1;
 const MIN_CLICKS_PER_SECOND: u64 = 1;
 const MAX_CLICKS_PER_SECOND: u64 = 50;
-const TOGGLE_BUTTON_WIDTH: f32 = 180.0;
+const TOGGLE_BUTTON_WIDTH: f32 = 240.0;
 
 pub struct SharedState {
     clicks_per_second: AtomicU64,
