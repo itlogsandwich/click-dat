@@ -51,7 +51,7 @@ fn sleep_for_current_interval(state: &app::SharedState) {
     let started_at = Instant::now();
 
     while state.is_clicking() {
-        let target = Duration::from_secs(state.interval_secs());
+        let target = state.click_interval();
         let elapsed = started_at.elapsed();
 
         if elapsed >= target {
