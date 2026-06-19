@@ -5,11 +5,14 @@ use inputbot::{KeybdKey::F6Key, handle_input_events};
 use std::{
     sync::Arc,
     thread,
-    thread::sleep,
+    thread::{sleep, yield_now},
     time::{Duration, Instant},
 };
 
 mod app;
+
+const CLICK_TIMING_CUSHION: Duration = Duration::from_millis(1);
+const MAX_SLEEP_SLICE: Duration = Duration::from_millis(2);
 
 fn main() {
     env_logger::init();
@@ -23,8 +26,9 @@ fn main() {
 
         loop {
             if click_state.is_clicking() {
+                let clicked_at = Instant::now();
                 let _ = enigo.button(Button::Left, Click).expect("Failed to click");
-                sleep_for_current_interval(&click_state);
+                sleep_for_current_interval(&click_state, clicked_at);
             } else {
                 sleep(Duration::from_millis(50));
             }
@@ -47,18 +51,45 @@ fn main() {
     }
 }
 
-fn sleep_for_current_interval(state: &app::SharedState) {
-    let started_at = Instant::now();
-
+fn sleep_for_current_interval(state: &app::SharedState, clicked_at: Instant) {
     while state.is_clicking() {
-        let target = state.click_interval();
-        let elapsed = started_at.elapsed();
+        let remaining = remaining_click_interval(state.click_interval(), clicked_at.elapsed());
 
-        if elapsed >= target {
+        if remaining.is_zero() {
             break;
         }
 
-        let remaining = target - elapsed;
-        sleep(remaining.min(Duration::from_millis(50)));
+        if remaining > CLICK_TIMING_CUSHION {
+            sleep((remaining - CLICK_TIMING_CUSHION).min(MAX_SLEEP_SLICE));
+        } else {
+            yield_now();
+        }
+    }
+}
+
+fn remaining_click_interval(target: Duration, elapsed: Duration) -> Duration {
+    target
+        .saturating_sub(CLICK_TIMING_CUSHION)
+        .saturating_sub(elapsed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn remaining_click_interval_counts_click_elapsed_time() {
+        assert_eq!(
+            remaining_click_interval(Duration::from_millis(20), Duration::from_millis(4)),
+            Duration::from_millis(15)
+        );
+    }
+
+    #[test]
+    fn remaining_click_interval_is_zero_when_click_exceeds_target() {
+        assert_eq!(
+            remaining_click_interval(Duration::from_millis(20), Duration::from_millis(25)),
+            Duration::ZERO
+        );
     }
 }
