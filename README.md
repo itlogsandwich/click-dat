@@ -1,4 +1,6 @@
 # click dat
 
-### Basically just an auto clicker that you can use for whatever reason. GUI will be added once I'm not too busy with work + school. 
-### It's blazingly fast. Use with caution, press F6 to start or stop.
+### An auto-clicker that clicks dat. whatever dat is.
+<img width="1291" height="731" alt="image" src="https://github.com/user-attachments/assets/41ec8025-7430-4db8-99fb-bbb34c3120a2" />
+
+
